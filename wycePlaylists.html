@@ -1,0 +1,76 @@
+<html>
+<head>
+	<title>WYCE</title>
+<!-- JQuery -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script>
+	//var jsonFile;
+	function callPHP(functionId)
+	{
+	//alert("hi");
+	$.ajax({
+    	type: "GET",
+    	data: {functionId: functionId},
+    	url: 'phpWyce.php'
+	    }).done(function (data) {
+			if(data == "failure") {
+				alert("Failure");
+	        }
+	        else {
+				alert("data = " + data);
+				getAuthToken(data);
+			}
+		});
+	}
+	
+	function GetURLParameter(sParam)
+	{
+		var sPageURL = window.location.search.substring(1);
+		var sURLVariables = sPageURL.split('&');
+		for (var i = 0; i < sURLVariables.length; i++) 
+		{	
+			var sParameterName = sURLVariables[i].split('=');
+			if (sParameterName[0] == sParam) 
+			{
+				return sParameterName[1];
+			}
+		}
+	}
+	
+	function checkParams()
+	{
+		var code = GetURLParameter('code');
+		alert(code);
+		var state = GetURLParameter('state');
+		alert(state);
+	}
+	
+	function getAuthToken(clientId)
+	{
+		//var clientId = callPHP(2);
+		alert(clientId);
+		var state = "koolaid";
+		document.location.href = "https://accounts.spotify.com/authorize/?client_id=" + clientId + "&response_type=code&redirect_uri=http://localhost:8888/wycePlaylists.html&state=" + state;
+	}
+	
+	
+</script>
+</head>
+<body>
+<h2>
+	Hi there
+	<button id="Authorize" onclick="callPHP(2);">Authorize</button>
+	<button id="checkParams" onclick="checkParams();">Check Params</button>
+	
+	
+</h2>
+<p id="result">
+ 
+</p>
+
+<script> 
+	//alert("first");
+	//alert("last");
+</script>
+</body>
+</html>
