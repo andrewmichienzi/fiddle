@@ -4,26 +4,11 @@
 <!-- JQuery -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 <script>
-	//var jsonFile;
-	function callPHP(functionId)
-	{
-	//alert("hi");
-	$.ajax({
-    	type: "GET",
-    	data: {functionId: functionId},
-    	url: 'phpWyce.php'
-	    }).done(function (data) {
-			if(data == "failure") {
-				alert("Failure");
-	        }
-	        else {
-				alert("data = " + data);
-				getAuthToken(data);
-			}
-		});
-	}
-	
-	function GetURLParameter(sParam)
+
+var homeUrl = "http://localhost:8888/home.html";
+var clientId = "";
+var  secret = "";
+function GetURLParameter(sParam)
 	{
 		var sPageURL = window.location.search.substring(1);
 		var sURLVariables = sPageURL.split('&');
@@ -37,40 +22,121 @@
 		}
 	}
 	
-	function checkParams()
-	{
-		var code = GetURLParameter('code');
-		alert(code);
-		var state = GetURLParameter('state');
-		alert(state);
+function setSecret()
+{
+	callPHP(3,  function(value){
+		alert("secret="+value);
+		secret = value;
+	});
+}
+
+function setClientId()
+{
+	callPHP(2, function(value){
+		alert("client="+value);
+		clientId = value;
+	});
+}
+
+function callPHP(callback)
+{
+	var code = GetURLParameter('code');
+	$.ajax({
+    	type: "POST",
+    	data: {code: code},
+    	url: 'getRefreshToken.php'
+	    }).done(function (data) {
+			if(data == "failure") {
+				alert("Failure");
+	        }
+	        else {
+				callback(data);
+			}
+		});
 	}
 	
-	function getAuthToken(clientId)
-	{
-		//var clientId = callPHP(2);
-		alert(clientId);
-		var state = "koolaid";
-		document.location.href = "https://accounts.spotify.com/authorize/?client_id=" + clientId + "&response_type=code&redirect_uri=http://localhost:8888/wycePlaylists.html&state=" + state;
-	}
+function makeRequest()
+{
+	callPHP(function (data)
+	{	
+		var json = JSON.parse(data.substring(0, data.length-1));
+		var access_token =  json.access_token;
+		var token_type = json.token_type;
+		var scope = json.scope;
+		var expires_in = json.expires_in;
+		var refresh_token = json.refresh_token;
+		
+		
+	});
+}
 	
+function getRefreshToken(callback)
+{
+	var code = GetURLParameter('code');
+	$.ajax({
+    	type: "GET",
+    	data: {code: code},
+    	url: 'getRefreshToken.js'
+	    }).done(function (data) {
+			if(data == "failure") {
+				alert("Failure");
+	        }
+	        else {
+				callback(data);
+			}
+		});
+}
+
+
+function sendPost()
+{
+	var grant_type="authorization_code"
+	var homeUrl = "http://localhost:8888/home.html";
+	var redirect_uri = homeUrl;
+	var json = "";
 	
+	var clientId = "c5e05e3d23464581955c9312234e3e7e";
+	var secret = "2208803f4009467999542bf7a25b0845";
+	var code=GetURLParameter('code');
+	
+	var myData = {
+		"data": {
+			"code": code,
+			"redirect_uri": redirect_uri,
+			"grant_type": grant_type
+		}
+	};
+	
+	$.ajax({
+		url: 'https://accounts.spotify.com/api/token',
+		data: myData,
+		type: 'POST',
+		dataType: 'jsonp',
+		success: function(){alert("Success"); },
+		error: function(xhr){
+        alert('Request Status: ' + xhr.status + ' Status Text: ' + xhr.statusText + ' ' + xhr.responseText);
+		console.log(xhr.error);
+		},
+		beforeSend: setHeader
+	});
+}
+
+function setHeader(xhr){
+	xhr.setRequestHeader('Authorization', 'Basic ' + clientId + ':' + secret);
+	alert("header");
+}
 </script>
 </head>
 <body>
 <h2>
-	Hi there
-	<button id="Authorize" onclick="callPHP(2);">Authorize</button>
-	<button id="checkParams" onclick="checkParams();">Check Params</button>
-	
 	
 </h2>
 <p id="result">
  
 </p>
 
+	<button id="makeRequest" onclick="makeRequest();">Make Request</button>
 <script> 
-	//alert("first");
-	//alert("last");
 </script>
 </body>
 </html>

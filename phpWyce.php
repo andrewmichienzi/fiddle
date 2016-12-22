@@ -3,10 +3,21 @@
 
 $GLOBALS['spotifyCredsPath'] = "spotifyCreds.json";
 $functionId = $_GET['functionId'];
+
 if($functionId == 2)
 {
 	getClientID();
 } 
+
+if($functionId == 3)
+{
+	getSecret();
+}
+
+if($functionId == 4)
+{
+	requestToken();
+}
 
 
 function getJson()
@@ -92,22 +103,72 @@ function parseSets($programmer, $date, $time, $sets)
 	echo $string;
 }
 
+function getSecret(){
+	$creds = file_get_contents($GLOBALS['spotifyCredsPath']);
+	$credsJson = json_decode($creds, true);
+	$secret = $credsJson['secret'];
+	echo $secret;
+	
+}
+
 function getClientID(){
 	$creds = file_get_contents($GLOBALS['spotifyCredsPath']);
 	$credsJson = json_decode($creds, true);
 	$clientId = $credsJson['clientId'];
 	echo $clientId;
-	/*$secret = $credsJson['secret'];
-	$redirect_uri="https://localhost:8888";
-	$url = "https://accounts.spotify.com/v1/me";
+}
+
+function setSecret(){
+	$creds = file_get_contents($GLOBALS['spotifyCredsPath']);
+	$credsJson = json_decode($creds, true);
+	$GLOBALS['secret'] = $credsJson['secret'];
+}
+
+function requestToken()
+{
+	$destUrl = $_GET['destUrl'];
+	$grant_type = $_GET['grant_type'];
+	$code = $_GET['code'];
+	$redirect_uri = $_GET['redirect_uri'];
+	//echo "Dest url = ".$destUrl;
+	//echo "grant type = ".$grant_type;
+	//echo "code = ".$code;
+	//echo "redirect_uri = " . $redirect_uri;
+	setSecret();
+	//echo "secret = ". $GLOBALS['secret'];
 	
-	$curl = curl_init("https://accounts.spotify.com/authorize/?client_id=c5e05e3d23464581955c9312234e3e7e&response_type=code&redirect_uri=http://localhost:8888/wycePlaylists.html&state=koolaid");
-	curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, FALSE);
-    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+	$data = array('grant_type' => $grant_type, 'code' => $code, 'redirect_uri' => $redirect_uri);
+	$postVars = http_build_query($data);
+	$ch  = curl_init();
 	
-	$response = curl_exec($curl);
-	curl_close($curl);*/
+	curl_setopt($ch, CURLOPT_URL, $destUrl);
+	curl_setopt($ch, CURLOPT_POST,  count($data));
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $postVars);
+	curl_setopt($ch, CURLOPT_HTTPHEADER, array('Authorization: Bearer '.$GLOBALS['secret']));
+	curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+    'Accept: application/json'
+));
+	$result = curl_exec($ch);
+	curl_close($ch);
+	echo $results;
+	return;
+	// use key 'http' even if you send the request to https://...
+	$options = array(
+		'http' => array(
+			'header'  => "Authorization: ".$GLOBALS['secret'],
+			'method'  => 'POST',	
+			'content' => http_build_query($data)
+		)
+	);
+	$context  = stream_context_create($options);
+	$result = file_get_contents($destUrl, false, $context);
+	if ($result === FALSE) 
+	{
+		/* Handle error */ 
+		echo "Yikes";
+	}
+		
+	var_dump($result);
 }
 ?>
 

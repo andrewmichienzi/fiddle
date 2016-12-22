@@ -1,0 +1,48 @@
+<html>
+<head>
+	<title>WYCE</title>
+<!-- JQuery -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script>
+	//var jsonFile;
+	function callPHP(functionId)
+	{
+	$.ajax({
+    	type: "GET",
+    	data: {functionId: functionId},
+    	url: 'phpWyce.php'
+	    }).done(function (data) {
+			if(data == "failure") {
+				alert("Failure");
+	        }
+	        else {
+				getAuthToken(data);
+			}
+		});
+	}
+	
+	function getAuthToken(clientId)
+	{
+		var state = "koolaid";
+		document.location.href = "https://accounts.spotify.com/authorize/?client_id=" + clientId + "&response_type=code&redirect_uri=http://localhost:8888/wycePlaylists.html&state=" + state;
+	}
+	
+	
+</script>
+</head>
+<body>
+<h2>
+	<button id="Authorize" onclick="callPHP(2);">Authorize</button>
+	
+	
+</h2>
+<p id="result">
+ 
+</p>
+
+<script> 
+	//alert("first");
+	//alert("last");
+</script>
+</body>
+</html>
