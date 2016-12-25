@@ -1,3 +1,64 @@
 <html>
-<h2> It works </h2>
+<head>
+<title>WYCE Home</title>
+<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<!-- Optional theme -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
+	<!-- JQuery -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<!-- Site-wide css -->
+	<link rel="stylesheet" href="./default.css">	
+	<script>
+		function getSessionInfo() {
+			$.ajax("./getSessionInformationAjax.php")
+			.done(function(data) {
+				data = JSON.parse(data);
+				if(data.hasRefreshToken == 'false' || !data.hasRefreshToken || data.refresh_token == "") {
+					$('#loginButton').html('<div class="defaultButton"><div class="btn btn-success"><INPUT type="submit" name="authorize" value="Authorize" onclick="callPHP(2);"></div></div></div>');
+				} else {
+				}
+				
+				$('#loginButton').html('<div class="defaultButton"><div class="btn btn-success"><INPUT type="submit" name="authorize" value="Authorize" onclick="callPHP(2);"></div></div></div>');
+				alert(data.expiration_time);
+			}).fail(function(){
+				alert("You're a failure");
+			});
+		}
+		
+		function callPHP(functionId)
+		{
+			$.ajax({
+				type: "GET",
+				data: {functionId: functionId},
+				url: 'phpWyce.php'
+			}).done(function (data) {
+				if(data == "failure") {
+					alert("Failure");
+				}
+				else {
+					getAuthToken(data);
+				}
+			});
+		}
+	
+		function getAuthToken(clientId)
+		{
+			var redirect_uri = "http://localhost:8888/getRefreshToken.php";
+			var state = "koolaid";
+			document.location.href = "https://accounts.spotify.com/authorize/?client_id=" + clientId + "&response_type=code&redirect_uri="+redirect_uri+"&state=" + state;
+		}
+	</script>
+	
+</head>
+<body>
+	<h2> It works </h2>
+	<div id="info"></div>
+	<div id="loginButton"></div>
+</body>
+<script>
+	getSessionInfo();
+</script>
 </html>

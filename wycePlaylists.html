@@ -1,5 +1,18 @@
 <html>
 <head>
+
+<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<!-- Optional theme -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
+	<!-- JQuery -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<!-- Site-wide css -->
+	<link rel="stylesheet" href="default.css">
+
+
 	<title>WYCE</title>
 <!-- JQuery -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
@@ -59,13 +72,20 @@ function makeRequest()
 {
 	callPHP(function (data)
 	{	
+	/*
 		var json = JSON.parse(data.substring(0, data.length-1));
 		var access_token =  json.access_token;
 		var token_type = json.token_type;
 		var scope = json.scope;
 		var expires_in = json.expires_in;
 		var refresh_token = json.refresh_token;
-		
+	*/
+	if(data == "success")
+	{
+		document.location.href = "http://localhost:8888/home.html";
+	}
+	else
+		alert("howdy");
 		
 	});
 }
@@ -78,7 +98,7 @@ function getRefreshToken(callback)
     	data: {code: code},
     	url: 'getRefreshToken.js'
 	    }).done(function (data) {
-			if(data == "failure") {
+			if(data == "failure" ||) {
 				alert("Failure");
 	        }
 	        else {

@@ -1,0 +1,28 @@
+body {
+	background: url("https://grcmc.org/images/uploads/img1459878729192-168-6-16.png") no-repeat;
+	width:100% 
+
+}
+#header {
+	margin-top: 2%;
+}
+.bottomMargin {
+	margin-bottom:1em;
+}
+#content {
+	padding:0;
+}
+
+buttons {
+	/*background: url("./background.png");*/
+	background-color: 148, 183, 28;
+	background-size: 5px 8px;
+	size: 5px 8px;	
+}
+
+div.defaultButton input{
+	background-color: rgb(148,183,28);
+	
+	cursor:pointer;
+    border: none;
+}
