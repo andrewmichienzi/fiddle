@@ -12,23 +12,62 @@
 	<!-- Site-wide css -->
 	<link rel="stylesheet" href="./default.css">	
 	<script>
+	
+		var testId = '0wDcplWeTlxrSCEsibwG4G';
 		function getSessionInfo() {
+		//alert("HI");
 			$.ajax("./getSessionInformationAjax.php")
 			.done(function(data) {
 				data = JSON.parse(data);
 				if(data.hasRefreshToken == 'false' || !data.hasRefreshToken || data.refresh_token == "") {
-					$('#loginButton').html('<div class="defaultButton"><div class="btn btn-success"><INPUT type="submit" name="authorize" value="Authorize" onclick="callPHP(2);"></div></div></div>');
+					$('#loginButton').html('<div class="defaultButton"><div class="btn btn-success"><INPUT type="submit" name="authorize" value="Authorize" onclick="callPHP(2, function(data){getAuthToken(data);});"></div></div></div>');
 				} else {
+					sessionInfo = data;
+					getUserInfo();
+					
+					if(data.noId == true)
+					{
+						getSessionInfo();
+					}	
+					createHomePage();
 				}
-				
-				$('#loginButton').html('<div class="defaultButton"><div class="btn btn-success"><INPUT type="submit" name="authorize" value="Authorize" onclick="callPHP(2);"></div></div></div>');
-				alert(data.expiration_time);
 			}).fail(function(){
 				alert("You're a failure");
 			});
 		}
 		
-		function callPHP(functionId)
+		function getUserInfo()
+		{
+			$.ajax({
+				type: "GET",
+				url: 'getUserInfo.php'
+			}).done(function (data) {
+				if(data == "failure") {
+					alert("Failure");
+				}
+				else {
+					//success
+					}
+				}
+			);
+		}
+		
+		function clearSession()
+		{
+			$.ajax({
+				type: "GET",
+				url: 'clearSession.php'
+			}).done(function (data) {
+				if(data == "failure") {
+					alert("Failure");
+				}
+				else {
+					alert("Session Cleared");
+				}
+			});
+		}
+		
+		function callPHP(functionId, callback)
 		{
 			$.ajax({
 				type: "GET",
@@ -39,24 +78,117 @@
 					alert("Failure");
 				}
 				else {
-					getAuthToken(data);
+					callback(data);
 				}
 			});
+		}
+		
+		function getPlaylistList()
+		{		
+			$.ajax({
+				type: "GET",
+				url: 'getPlaylistList.php'
+			}).done(function (data) {
+				if(data == "failure") {
+					alert("Failure");
+				}
+				else {
+					list = JSON.parse(data);
+					populatePlaylistList(list);					
+				}
+			});
+		}
+		/*
+		function requestPlaylistScope()
+		{
+			callPHP(2, function(data)
+			{
+				redirect_uri = 'http://localhost:8888/home.html';
+				var scopes = 'playlist-modify-public';
+				clientId = data.trim();
+				var website = 'https://accounts.spotify.com/authorize' + 
+				'?response_type=code' +
+				'&client_id=' + clientId +
+				(scopes ? '&scope=' + scopes : '') +
+				'&redirect_uri=' + redirect_uri;
+				document.getElementById("test").innerHTML = website;
+				document.getElementById("test").innerHTML += '<br><br>clientId = ' + clientId + 'hi';
+			});
+			
+		}
+		*/
+		function populatePlaylistList(list)
+		{
+			var div = document.getElementById("playlistList");
+			div.innerHTML = '<h4>Playlists</h4><br><div style = "width:100%" id="playlists">';
+			var i = 0;
+			list.forEach(function(element) 
+			{
+				div.innerHTML += '<div id="'+element.id+'" class="row">';
+				div.innerHTML +='<div class="col-sm-4"><img width="100%" src="'+element.imageUrl+'"></div>';
+				div.innerHTML +='<div class="col-sm-8">'+element.name+'</div>';
+				div.innerHTML += '</div>';
+				i++;
+			});
+			div.innerHTML += '</div>';
+			
+		}
+		
+		function createPlaylist()
+		{			
+			var playlistName = document.getElementById("playlistName").value;
+			alert(playlistName);
+			if (playlistName == ''){
+				alert("Must name playlist something");
+				return;
+			}
+			$.ajax({
+				type: "GET",
+				data: {name: playlistName},
+				url: 'createPlaylist.php'
+			}).done(function (data) {
+				if(data == "failure") {
+					alert("Failure");
+				}
+				else {
+					alert(data);
+					getPlaylistList();
+				}
+				alert("HI");
+			});
+		}
+		
+		function createHomePage()
+		{
+			var main = document.getElementById("main");
+			main.innerHTML = '<h3>Welcome '+ sessionInfo.display_name + ' </h3><p id = "appDescription">Create a spotify playlist using a WYCE DJ</p><br><br>';
+			main.innerHTML += '<form onsubmit="createPlaylist()">New Playlist Name: <input id="playlistName" type="text"><br><input type="submit"></form>';
+			
+			getPlaylistList();
+			requestPlaylistScope();
 		}
 	
 		function getAuthToken(clientId)
 		{
 			var redirect_uri = "http://localhost:8888/getRefreshToken.php";
 			var state = "koolaid";
-			document.location.href = "https://accounts.spotify.com/authorize/?client_id=" + clientId + "&response_type=code&redirect_uri="+redirect_uri+"&state=" + state;
-		}
+			var scopes = 'playlist-modify-public playlist-modify-private';
+			var website = "https://accounts.spotify.com/authorize/?client_id=" + clientId.trim() + "&response_type=code"+ "&redirect_uri="+redirect_uri+"&state=" + state + (scopes ? '&scope=' + scopes : '');
+			document.location.href = website;
+			}
 	</script>
 	
 </head>
 <body>
-	<h2> It works </h2>
+	<h2></h2>
 	<div id="info"></div>
+	<div id="test"></div>
 	<div id="loginButton"></div>
+	<div id="main"></div>
+	<div id="newPlaylist"></div>
+	<div id="playlistList"></div>
+	
+	
 </body>
 <script>
 	getSessionInfo();

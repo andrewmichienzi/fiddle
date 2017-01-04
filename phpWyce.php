@@ -4,6 +4,11 @@
 $GLOBALS['spotifyCredsPath'] = "spotifyCreds.json";
 $functionId = $_GET['functionId'];
 
+if($functionId == 1)
+{
+	getJson();
+}
+
 if($functionId == 2)
 {
 	getClientID();
@@ -19,6 +24,16 @@ if($functionId == 4)
 	requestToken();
 }
 
+if($functionId == 5)
+{
+	//get User Information
+	//getUserInformation();
+}
+
+function getUserInformation()
+{
+	
+}
 
 function getJson()
 {
@@ -66,6 +81,7 @@ function parsePlaylistData($json)
 
 function parseSets($programmer, $date, $time, $sets)
 {	
+	echo "hi";
 	$json = array(
 			"programmer" => $programmer,
 			"date" => $date,

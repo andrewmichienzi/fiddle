@@ -1,19 +1,35 @@
 <?php
 
 	startSession();
-	$homeUrl = "http://localhost:8888/home.html";
+	$GLOBALS['homeUrl'] = "http://localhost:8888/home.html";
 	
 	$GLOBALS['spotifyCredsPath'] = "spotifyCreds.json";
 	$secret = getSecret();
 	$clientId = getClientID();
-
+	if(isset($_GET['code']))
+	{
+		//echo "no refresh token";
+		$fields = array(
+			'grant_type' => urlencode("authorization_code"),
+			'code' => urlencode($_GET['code']),
+			'redirect_uri' => urlencode("http://localhost:8888/getRefreshToken.php")
+		);
+		
+		$returnFields = array('access_token', 'refresh_token', 'token_type', 'scope', 'expires_in');
+	}
+	else
+	{
+		//echo "auth Expired";
+		$fields = array(
+			'grant_type' => urlencode("refresh_token"),
+			'refresh_token' => urlencode($_SESSION['refresh_token'])
+		);
+		
+		$returnFields = array('access_token', 'token_type', 'scope', 'expires_in');
+	}		
 	
+
 	$url = 'https://accounts.spotify.com/api/token';
-	$fields = array(
-		'grant_type' => urlencode("authorization_code"),
-		'code' => urlencode($_GET['code']),
-		'redirect_uri' => urlencode("http://localhost:8888/getRefreshToken.php")
-	);
 
 	foreach($fields as $key=>$value)
 	{
@@ -35,35 +51,34 @@
 	curl_close($ch);
 	
 	$json = json_decode($result, true);
+	
+	foreach($returnFields as $rf)
+	{
+		if(isset($json[$rf]))
+		{
+			$string = $json[$rf];
+			$_SESSION[$rf] = $string;
+		}
+	}
+	
 	$timeInSeconds = $json['expires_in'];
 	$now = time();
-	$_SESSION['expiration_time'] = $now + $timeInSeconds;
+	$now = $now + $timeInSeconds;
+	$_SESSION['expiration_time'] = $now;
 	
-	
-	//Add to session variables
-	$string = $json['refresh_token'];
-	$_SESSION["refresh_token"] = $string;
-	$string = $json['access_token'];
-	$_SESSION['access_token'] = $string;
-	$string = $json['token_type'];
-	$_SESSION['token_type'] = $string;
-	$string = $json['scope'];
-	$_SESSION['scope'] = $string;
-	
-	$_SESSION['expires_in'] = $timeInSeconds;
-	$_SESSION['hasRefreshToken'] = true;
-	
-	while (ob_get_status()) 
-	{
-		ob_end_clean();
+	if(!isset($_GET['noReturnHome'])){
+		returnHome();
 	}
-
-	header( "Location: $homeUrl" );
-	exit();
+		
+	//echo $result;
 	
-	
-	
-	
+	function returnHome()
+	{
+		$homeUrl = $GLOBALS['homeUrl'];
+		header( "Location: $homeUrl" );
+		exit();
+	}
+		
 	function getSecret(){
 	$creds = file_get_contents($GLOBALS['spotifyCredsPath']);
 	$credsJson = json_decode($creds, true);
@@ -99,6 +114,28 @@ function startSession()
 			$_SESSION[$sv] = array();
 		}
 	}
+}
+
+function hasRefreshToken()
+{
+	if($_SESSION['refresh_token'] == null)
+		return false;
+	return true;
+}
+
+function authExpired()
+{
+	$et = $_SESSION['expiration_time'];
+	
+	if($et != null)
+	{
+		$now = time();
+		if($et < $now)
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 	
