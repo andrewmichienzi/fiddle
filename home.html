@@ -26,6 +26,9 @@
 				if(data.hasRefreshToken == 'false' || !data.hasRefreshToken || data.refresh_token == "") {
 					$('#loginButton').html('<div class="defaultButton"><div class="btn btn-success"><INPUT type="submit" name="authorize" value="Authorize" onclick="callPHP(2, function(data){getAuthToken(data);});"></div></div></div>');
 				} else {
+				
+					$('#loginButton').html('<div class="defaultButton"><div class="btn btn-success"><INPUT type="submit" name="authorize" value="Authorize" onclick="callPHP(2, function(data){getAuthToken(data);});"></div></div></div>');
+					
 					sessionInfo = data;
 					getUserInfo();
 					
@@ -38,6 +41,22 @@
 			}).fail(function(){
 				alert("You're a failure");
 			});
+			/*
+			ajaxCaller('getSessionInformationAjax.php', null, function(data){
+				data = JSON.parse(data);
+				if(data.hasRefreshToken == 'false' || !data.hasRefreshToken || data.refresh_token == "") {
+					$('#loginButton').html('<div class="defaultButton"><div class="btn btn-success"><INPUT type="submit" name="authorize" value="Authorize" onclick="callPHP(2, function(data){getAuthToken(data);});"></div></div></div>');
+				} else {
+					sessionInfo = data;
+					getUserInfo();
+					
+					if(data.noId == true)
+					{
+						getSessionInfo();
+					}	
+					createHomePage();
+				}
+			}*/
 		}
 		
 		function getUserInfo()
@@ -237,11 +256,15 @@
 		
 		function getAuthToken(clientId)
 		{
+			clientId = clientId.trim();
 			var redirect_uri = "http://localhost:8888/getRefreshToken.php";
 			var state = "koolaid";
+			//alert(clientId);
 			var scopes = 'playlist-modify-public playlist-modify-private';
-			var website = "https://accounts.spotify.com/authorize/?client_id=" + clientId.trim() + "&response_type=code"+ "&redirect_uri="+redirect_uri+"&state=" + state + (scopes ? '&scope=' + scopes : '');
-			document.location.href = website;
+			var website = "https://accounts.spotify.com/authorize/?client_id=" + clientId + "&response_type=code"+ "&redirect_uri="+redirect_uri+"&state=" + state + "&scope=" + scopes + "&show_dialog=true";
+			document.getElementById('main').innerHTML = website;
+			//alert(website);
+			document.location.href = website;		
 		}
 		
 		$( function() {
