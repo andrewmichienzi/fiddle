@@ -17,6 +17,7 @@
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 	<script>
 		selectedDate = "";
+		var trackIds = new Array();
 		//var testId = '0wDcplWeTlxrSCEsibwG4G';
 		function getSessionInfo() {
 			$.ajax("./getSessionInformationAjax.php")
@@ -80,24 +81,9 @@
 		function getPlaylistList()
 		{					
 			ajaxCaller('getPlaylistList.php', null, function(data){
-					list = JSON.parse(data);
-					populatePlaylistList(list);	
-				});
-				
-				/*
-			$.ajax({
-				type: "GET",
-				url: 'getPlaylistList.php'
-			}).done(function (data) {
-				if(data == "failure") {
-					alert("Failure");
-				}
-				else {
-					list = JSON.parse(data);
-					populatePlaylistList(list);					
-				}
-			});
-			*/
+				list = JSON.parse(data);
+				populatePlaylistList(list);	
+			});				
 		}
 		
 		function ajaxCaller(url, data, callback)
@@ -141,6 +127,14 @@
 				alert("Must name playlist something");
 				return;
 			}
+			alert(trackIds.length);
+			data = {};
+			data['name'] = playlistName;
+			data['spotifyIds'] = JSON.stringify(trackIds);
+			ajaxCaller('createPlaylist.php', data, function(data){
+				alert(data);
+			});
+			/*
 			$.ajax({
 				type: "GET",
 				data: {name: playlistName},
@@ -154,15 +148,18 @@
 					getPlaylistList();
 				}
 				alert("HI");
-			});
+			});*/
 		}
 		
 		function createHomePage()
 		{
 			var main = document.getElementById("main");
-			main.innerHTML = '<h3>Welcome '+ sessionInfo.display_name + ' </h3><p id = "appDescription">Create a spotify playlist using a WYCE DJ</p><br><br>';
-			main.innerHTML += '<form onsubmit="createPlaylist()">New Playlist Name: <input id="playlistName" type="text"><br><input type="submit"></form>';
-			
+			var htmlString = '<h3>Welcome '+ sessionInfo.display_name + ' </h3><p id = "appDescription">Create a spotify playlist using a WYCE DJ</p><br><br>';
+			htmlString += '<form id="newPlaylistForm" onsubmit="createPlaylist()">New Playlist Name: <input id="playlistName" type="text"><br><input type="submit"></form>';
+			main.innerHTML = htmlString;
+			$("#newPlaylistForm").submit(function(e){
+				e.preventDefault();
+			});
 			
 			var today = new Date();
 			var year = today.getYear() + 1900;
@@ -200,7 +197,40 @@
 			data['programmer'] = programmer;
 			data['date'] = selectedDate;
 			ajaxCaller('addTrackToPlaylist.php', data, function(data){
-				alert(data);
+				var json = JSON.parse(data);
+				if(json.length == 1)
+				{
+					json = json[0];
+					alert("Programmer = " + json['programmer']);
+					var htmlString = '<table id="songListTable"><tr><th>Artist</th><th>Song Name</th><th>Found on Spotify?</th><th>Image</th></tr>';
+					for(var i = 0; i < json['number_of_tracks']; i++)
+					{
+						track = json['tracks'][i];
+						//alert(track['spotifyInfo']['id']);
+						
+						htmlString += '<tr id=song'+i+'><td>'+track['artist']+'</td><td>'+track['track_title']+'</td>';
+						if(track['spotifyInfo']['id'] == null)
+						{
+							htmlString += '<td>False</td>';
+							htmlString += '<td>No Image</td>';
+						}
+						else
+						{
+							htmlString += '<td>True</td>';
+							htmlString += '<td><img src="'+track['spotifyInfo']['image']['url']+'" style="widgth:64px;height:64px">';
+							trackIds.push(track['spotifyInfo']['id']);
+						}
+						htmlString+='</tr>';
+					}
+					htmlString+='</table>';
+					var songListDiv = document.getElementById('songList');
+					songListDiv.innerHTML = htmlString;
+					alert("Done");
+				}
+				else
+				{
+					alert(json.length);
+				}
 			});
 			
 		}
@@ -238,6 +268,7 @@
 	<div id="newPlaylist">
 		<div id="dateSelector"></div>
 		<div id="programmerSelector"></div>
+		<div id="songList"></div>
 	</div>
 	<div id="playlistList"></div>
 	

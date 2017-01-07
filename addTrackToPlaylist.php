@@ -32,6 +32,8 @@
 			$programmerArray['programmer'] = $value['programmer'];
 			$returnArray[$i] = $programmerArray;
 			$i = $i + 1;
+			//echo json_encode($returnArray);
+			//exit;
 		}
 	}
 	$spotifyJson = getSpotifyInformation($returnArray);
@@ -123,6 +125,8 @@
 	
 	function getSongInfo($json)
 	{
+		//echo json_encode($json);
+		//exit;
 		$tracks = $json['tracks'];
 		if($tracks['total'] != 0)
 		{
