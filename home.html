@@ -3,7 +3,7 @@
 <title>WYCE Home</title>
 <!-- Latest compiled and minified CSS -->
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-	<!-- Optional theme -->
+	<!-- Optional theme -->	
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
 	<!-- JQuery -->
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
@@ -11,11 +11,14 @@
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 	<!-- Site-wide css -->
 	<link rel="stylesheet" href="./default.css">	
-	<script>
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 	
-		var testId = '0wDcplWeTlxrSCEsibwG4G';
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+	<script>
+		selectedDate = "";
+		//var testId = '0wDcplWeTlxrSCEsibwG4G';
 		function getSessionInfo() {
-		//alert("HI");
 			$.ajax("./getSessionInformationAjax.php")
 			.done(function(data) {
 				data = JSON.parse(data);
@@ -38,18 +41,9 @@
 		
 		function getUserInfo()
 		{
-			$.ajax({
-				type: "GET",
-				url: 'getUserInfo.php'
-			}).done(function (data) {
-				if(data == "failure") {
-					alert("Failure");
-				}
-				else {
-					//success
-					}
-				}
-			);
+			ajaxCaller('getUserInfo.php', null, function(data){
+			
+			});
 		}
 		
 		function clearSession()
@@ -84,7 +78,13 @@
 		}
 		
 		function getPlaylistList()
-		{		
+		{					
+			ajaxCaller('getPlaylistList.php', null, function(data){
+					list = JSON.parse(data);
+					populatePlaylistList(list);	
+				});
+				
+				/*
 			$.ajax({
 				type: "GET",
 				url: 'getPlaylistList.php'
@@ -97,26 +97,25 @@
 					populatePlaylistList(list);					
 				}
 			});
+			*/
 		}
-		/*
-		function requestPlaylistScope()
+		
+		function ajaxCaller(url, data, callback)
 		{
-			callPHP(2, function(data)
-			{
-				redirect_uri = 'http://localhost:8888/home.html';
-				var scopes = 'playlist-modify-public';
-				clientId = data.trim();
-				var website = 'https://accounts.spotify.com/authorize' + 
-				'?response_type=code' +
-				'&client_id=' + clientId +
-				(scopes ? '&scope=' + scopes : '') +
-				'&redirect_uri=' + redirect_uri;
-				document.getElementById("test").innerHTML = website;
-				document.getElementById("test").innerHTML += '<br><br>clientId = ' + clientId + 'hi';
+			$.ajax({
+				type: "GET",
+				data: data,
+				url: url	
+			}).done(function (data) {
+				if(data == "failure") {
+					alert("Failure");
+				}
+				else {
+					callback(data);
+				}
 			});
-			
 		}
-		*/
+	
 		function populatePlaylistList(list)
 		{
 			var div = document.getElementById("playlistList");
@@ -164,10 +163,48 @@
 			main.innerHTML = '<h3>Welcome '+ sessionInfo.display_name + ' </h3><p id = "appDescription">Create a spotify playlist using a WYCE DJ</p><br><br>';
 			main.innerHTML += '<form onsubmit="createPlaylist()">New Playlist Name: <input id="playlistName" type="text"><br><input type="submit"></form>';
 			
-			getPlaylistList();
-			requestPlaylistScope();
+			
+			var today = new Date();
+			var year = today.getYear() + 1900;
+			var month = today.getMonth() + 1;
+			var day = today.getDay() + 1;
+			var dateString = (year + '-' + month + '-' + day);
+			createProgrammerDropdown(dateString);
 		}
 	
+		function createProgrammerDropdown(date)
+		{
+			//Dropdown
+			selectedDate = date;
+			data = {};
+			data['date'] = date;
+			ajaxCaller('getProgrammers.php', data, function(data){
+				var programmers =  JSON.parse(data);
+				var progDiv = document.getElementById('programmerSelector');
+				var htmlString = '<select id="selectedProgrammer">';
+				for(i = 0; i < programmers.length; i++)
+				{
+					htmlString += '<option>' + programmers[i] + '</option>';
+				}
+				htmlString += '</select>';
+				htmlString += '<button id="testButton" onclick="getPlaylist();">Get Playlist</button>';
+				progDiv.innerHTML = htmlString;
+				
+			});
+		}
+		
+		function getPlaylist()
+		{
+			var programmer = document.getElementById('selectedProgrammer').value;
+			data = {};
+			data['programmer'] = programmer;
+			data['date'] = selectedDate;
+			ajaxCaller('addTrackToPlaylist.php', data, function(data){
+				alert(data);
+			});
+			
+		}
+		
 		function getAuthToken(clientId)
 		{
 			var redirect_uri = "http://localhost:8888/getRefreshToken.php";
@@ -175,7 +212,20 @@
 			var scopes = 'playlist-modify-public playlist-modify-private';
 			var website = "https://accounts.spotify.com/authorize/?client_id=" + clientId.trim() + "&response_type=code"+ "&redirect_uri="+redirect_uri+"&state=" + state + (scopes ? '&scope=' + scopes : '');
 			document.location.href = website;
-			}
+		}
+		
+		$( function() {
+			$("#dateSelector").datepicker({
+				onSelect: function (dataText, inst){
+					//alert (dataText);
+					createProgrammerDropdown(dataText);
+				},
+				dateFormat: "yy-mm-dd",
+				maxDate: new Date()
+			});
+		});
+		
+		
 	</script>
 	
 </head>
@@ -185,7 +235,10 @@
 	<div id="test"></div>
 	<div id="loginButton"></div>
 	<div id="main"></div>
-	<div id="newPlaylist"></div>
+	<div id="newPlaylist">
+		<div id="dateSelector"></div>
+		<div id="programmerSelector"></div>
+	</div>
 	<div id="playlistList"></div>
 	
 	
