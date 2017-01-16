@@ -16,3 +16,12 @@ To run:
 <li>This list includes The album, artist, song name and whether or not it was found on spotify.</li> 
 <li>Once the song list has been created, you may type in the playlist name and hit 'Submit'</li>
 <li>This will create a playlist under your Spotify user name.</li>
+</ol>
+
+Plans/ideas for improvement:
+<ul>
+<li>Create front end by adding easily selected dates and DJs. Make it more flexible by allowing multiple dates and multiple DJs</li>
+<li>Create html objects in an order that doesn't cause latency in front-end creation (DJ drop down menu)</li>
+<li>Figure out best place to fork processes either in PHP scripts or javascript to speed up process in adding songs to playlist</li>
+<li>Experiment with cacheing song and/or DJ information?</li>
+</ul>
