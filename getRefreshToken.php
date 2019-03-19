@@ -1,6 +1,8 @@
 <?php
-
-	startSession();
+ if(!isset($_SESSION)) 
+ { 
+	 session_start(); 
+ } 
 	$GLOBALS['homeUrl'] = "http://localhost:8888/home.html";
 	
 	$GLOBALS['spotifyCredsPath'] = "spotifyCreds.json";
@@ -30,7 +32,7 @@
 	
 
 	$url = 'https://accounts.spotify.com/api/token';
-
+	$fields_string = '';
 	foreach($fields as $key=>$value)
 	{
 		$fields_string .= $key.'='.$value.'&';
@@ -118,9 +120,9 @@ function startSession()
 
 function hasRefreshToken()
 {
-	if($_SESSION['refresh_token'] == null)
-		return false;
-	return true;
+	if(isset($_SESSION['refresh_token']))
+		return true;
+	return false;
 }
 
 function authExpired()

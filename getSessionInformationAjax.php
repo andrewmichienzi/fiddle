@@ -9,9 +9,9 @@
 			$userInfo['scope'] = $_SESSION['scope'];
 			$userInfo['expires_in'] = $_SESSION['expires_in'];
 			$userInfo['hasRefreshToken'] = 'true';
-			$userInfo['id'] = $_SESSION['id'];
-			$userInfo['href'] = $_SESSION['href'];
-			$userInfo['display_name'] = $_SESSION['display_name'];
+			$userInfo['id'] = isset($_SESSION['id']) ? $_SESSION['id'] : null;
+			$userInfo['href'] = isset($_SESSION['href']) ? $_SESSION['href'] : null;
+			$userInfo['display_name'] = isset($_SESSION['display_name']) ? $_SESSION['display_name'] : null;
 			
 			if($userInfo['id'] == null)
 				$userInfo['noId'] = true;

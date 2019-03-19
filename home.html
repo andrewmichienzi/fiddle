@@ -216,6 +216,7 @@
 			data['programmer'] = programmer;
 			data['date'] = selectedDate;
 			ajaxCaller('addTrackToPlaylist.php', data, function(data){
+				console.log(json);
 				var json = JSON.parse(data);
 				if(json.length == 1)
 				{

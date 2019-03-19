@@ -5,6 +5,8 @@
 	include 'getRefreshToken.php';
 	//$_GET['date'] = "2016-12-05";
 	getListOfSongs();
+
+	// echo 'here';
 	
 	function getListOfSongs()
 	{
@@ -125,8 +127,8 @@
 	
 	function getSongInfo($json)
 	{
-		//echo json_encode($json);
-		//exit;
+		// echo $json['tracks']['href'];
+		// exit;
 		$tracks = $json['tracks'];
 		if($tracks['total'] != 0)
 		{
